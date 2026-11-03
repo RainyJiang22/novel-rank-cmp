@@ -83,6 +83,8 @@ cd novel-rank-cmp
 
 macOS / Windows / Linux 安装包分别在对应主机上构建。
 
+macOS 安装包版本单独设为 `1.0.0`，满足 [DMG 的主版本号必须大于 0 的校验规则](https://github.com/JetBrains/compose-multiplatform/blob/v1.9.3/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/desktop/application/internal/validation/validatePackageVersions.kt)；应用开发版本及其他桌面包仍使用 `0.1.0`。
+
 ### iOS
 
 1. 在 macOS 上安装 Xcode 并完成首次启动配置，确保可使用 JDK 17。
@@ -105,7 +107,7 @@ PRODUCT_BUNDLE_IDENTIFIER = com.yourname.novelrank
 
 ## 验证状态
 
-当前仅验证工程文件、版本目录、XML/plist、Xcode 工程结构和 Gradle Wrapper 校验和。**尚未执行 Gradle/Xcode 编译、三端启动或设备验证**，不能将配置检查视为构建通过。
+已验证工程文件、版本目录、XML/plist、Xcode 工程结构和 Gradle Wrapper 校验和，并通过 `./gradlew help --offline --console=plain` 的项目配置检查。**尚未执行应用编译、三端启动或设备验证**，不能将配置检查视为应用构建通过。
 
 精确检查记录见 [初始化验证记录](docs/features/rankings/v0.1.0/verification.md)。初始化阶段尚无业务接口；最终质量验收为 `SKIPPED`（`quality_gate=off`）。
 

@@ -38,3 +38,10 @@
 ## 任务 4：后续业务阶段 `⬜ 待处理`
 
 依赖服务端契约后新增 `model/Models.kt`、`data/RankRepository.kt`、`presentation/RankPresenter.kt`、`ui/components/*` 和各端网络/存储实现；再新增 `commonTest` 覆盖非法选择、取消旧请求、服务失败和搜索。执行 `./gradlew :composeApp:desktopTest` 的权限与范围在该阶段明确。不得将未执行项勾选为通过。
+
+## 初始化修复：macOS 打包版本 `✅ 已完成`
+
+- ✅ 修改 `composeApp/build.gradle.kts`：为 `nativeDistributions.macOS.packageVersion` 设置 `1.0.0`，修复 `0.1.0` 在项目配置阶段导致的 DMG 版本和构建版本校验失败。
+- ✅ 更新 `README.md`：说明 macOS 安装包版本与应用开发版本的区别。
+- ✅ 执行 `./gradlew help --offline --console=plain`：`BUILD SUCCESSFUL in 4s`，只验证 Gradle 项目配置，不编译或打包 Android、iOS、Desktop。
+- ✅ 在 `verification.md` 记录修复与验证结果。GitHub 交付以对应远程修复提交为准，最终质量门禁仍为 `SKIPPED`。

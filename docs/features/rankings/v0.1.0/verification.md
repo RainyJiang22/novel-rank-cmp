@@ -2,7 +2,7 @@
 
 日期：2026-11-03。范围：Android、iOS、Desktop CMP 工程骨架与项目文档。
 
-## 已执行
+## 初始化交付时的静态检查
 
 | 检查 | 方法 / 命令 | 结果 |
 | --- | --- | --- |
@@ -51,3 +51,18 @@ iOS 的后续验证入口为 `iosApp/iosApp.xcodeproj` 的共享 `iosApp` Scheme
 - 未提交 SDK 路径、个人 IDE 配置、签名资料、认证凭据和构建缓存。GitHub 认证由本机凭据管理器处理。
 
 本文件后续状态同步属于文档提交；工程初始化验证对应上述源码提交。完整实时热榜实现仍在后续任务中。
+
+## 配置修复：macOS DMG 版本
+
+初始化后的首次 Gradle 同步暴露了 DMG 版本校验错误：公共 `nativeDistributions.packageVersion = "0.1.0"` 被 macOS 继承，而插件要求 DMG 版本与构建版本的主版本号大于 0。原来的文件格式检查没有覆盖 Gradle 插件配置逻辑。
+
+修复：在 `composeApp/build.gradle.kts` 的 `macOS` 中覆盖 `packageVersion = "1.0.0"`。应用开发版本和其他平台包版本仍为 `0.1.0`。
+
+配置验证命令：
+
+```bash
+./gradlew help --offline --console=plain
+git diff --check
+```
+
+结果：`BUILD SUCCESSFUL in 4s`，仅执行 `:help` 一个任务；补丁格式检查通过。Gradle 已成功配置项目，并通过 DMG 版本与构建版本校验。未执行应用编译、DMG 打包、设备启动或原生测试，最终质量门禁仍为 `SKIPPED`。

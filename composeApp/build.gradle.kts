@@ -60,7 +60,11 @@ compose.desktop {
             packageVersion = "0.1.0"
             description = "跨平台小说分类热榜"
             vendor = "NovelRank"
-            macOS { bundleID = "com.novelrank.desktop" }
+            macOS {
+                bundleID = "com.novelrank.desktop"
+                // macOS installer versions require a positive major version.
+                packageVersion = "1.0.0"
+            }
         }
     }
 }
