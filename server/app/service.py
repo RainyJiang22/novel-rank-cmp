@@ -10,7 +10,6 @@ from .sources.base import SourceError, SourceHTTP
 from .sources.fanqie import Fanqie
 from .sources.jinjiang import Jinjiang
 from .sources.qidian import Qidian
-from .sources.qimao import Qimao
 
 
 @dataclass(frozen=True)
@@ -26,7 +25,7 @@ class RankingService:
         self.http = http
         if adapters is None:
             self.http = http or SourceHTTP(self.settings)
-            adapters = {"fanqie": Fanqie(self.http), "qimao": Qimao(self.http),
+            adapters = {"fanqie": Fanqie(self.http),
                         "jinjiang": Jinjiang(self.http), "qidian": Qidian(self.http)}
         self.adapters = adapters
         self.clock = clock

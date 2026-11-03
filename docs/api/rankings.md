@@ -2,7 +2,7 @@
 
 本地默认地址 `http://127.0.0.1:8000`，无认证。OpenAPI 为 `/openapi.json`，交互文档为 `/docs`。字段使用 camelCase，时间使用带 UTC 时区的 ISO 8601。
 
-本文件是稳定契约；[测试链生成的接口文档](../features/rankings/api/rankings/doc/00_link.md) 包含本次实际响应，不能作为持续更新的榜单使用。
+本文件是稳定契约；[初版测试链生成的接口文档](../features/rankings/api/rankings/doc/00_link.md) 保留当时响应，不能作为持续更新的榜单或当前来源目录使用。当前验证见[来源修复记录](../features/rankings/v0.1.0/server/source-fix.md)。云端基础地址为 `https://47.251.189.239/novelrank`。
 
 ## 接口
 
@@ -21,19 +21,19 @@
 | Category | `id`, `name`, `group`, `boardIds` | 只允许使用该分类列出的榜单 ID |
 | Board | `id`, `name`, `metricLabel` | 原站口径，不用于跨站比较 |
 
-分类 ID 只在本站范围内唯一。番茄使用 `性别_官方分类ID`，如 `1_261`；七猫 `boy/girl` 与数字分类具有不同支持榜单；晋江使用稳定英文分类 ID 对应官方分组名。
+当前目录为起点、番茄、晋江三个来源，共 120 种合法组合。分类 ID 只在本站范围内唯一：起点使用 `all` 或官方分类 ID（如玄幻 `21`），番茄使用 `性别_官方分类ID`（如 `1_261`），晋江使用稳定英文分类 ID 对应官方分组名。七猫已移除，旧请求按未知来源在访问上游前返回 400。
 
 ### 查询参数
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| source | string | 是 | `qidian/fanqie/qimao/jinjiang` |
+| source | string | 是 | `qidian/fanqie/jinjiang` |
 | category | string | 是 | 从本站 categories 选择 |
 | board | string | 是 | 必须包含于所选分类的 boardIds |
 | refresh | boolean | 否 | 默认 false；true 尝试更新，但仍遵守 60 秒最短重试间隔 |
 
 ```bash
-curl 'http://127.0.0.1:8000/api/v1/rankings?source=qimao&category=203&board=category-click'
+curl 'http://127.0.0.1:8000/api/v1/rankings?source=qidian&category=21&board=yuepiao'
 ```
 
 ### RankingSnapshot
@@ -73,7 +73,7 @@ curl 'http://127.0.0.1:8000/api/v1/rankings?source=qimao&category=203&board=cate
 | unavailable | 空 | 来源网络、超时或 HTTP 错误；稍后重试 |
 | parse_error | 空 | 结构、分类、顺序不匹配；不能当作无作品 |
 
-没有公开收入金额的晋江金榜和没有点击数值的七猫书库可以是 `ok` 且 `metric=null`；起点或番茄已有指标被字体编码或缺失时为 `partial`。不比较不同网站的 metric。
+没有公开收入金额的晋江金榜、没有公开数值的起点畅销榜可以是 `ok` 且 `metric=null`；起点月票或番茄已有指标被字体编码或缺失时为 `partial`。不比较不同网站的 metric。
 
 ### HTTP 错误
 
@@ -90,6 +90,5 @@ curl 'http://127.0.0.1:8000/api/v1/rankings?source=qimao&category=203&board=cate
 ## 来源核对入口
 
 - [番茄都市日常阅读榜](https://fanqienovel.com/rank/1_2_261)：阅读/新书的作品条件及榜单更新说明来自原站。
-- [七猫都市书库](https://www.qimao.com/shuku/a-203-a-a-a-a-a-click-1/) 与 [男生大热日榜](https://www.qimao.com/paihang/boy/hot/date/)：分别使用点击量顺序与热度。
 - [晋江收入金榜](https://www.jjwxc.net/topten.php?orderstr=12)：按 `.box_06` 的官方分类分组；排除历史上榜天数列表。
-- [起点玄幻月票榜](https://www.qidian.com/rank/yuepiao/chn21/)：本机访问返回 202，当前只验证了受限状态和合成页面解析，未声称真实排名接通。
+- [起点玄幻月票榜](https://m.qidian.com/rank/yuepiao/catid21/) 与 [玄幻畅销榜](https://m.qidian.com/rank/hotsales/catid21/)：直接读取官方移动页面的公开 SSR JSON，校验当前月份、所选分类、榜单、第一页和原始名次；不执行页面脚本。全站榜使用不带 `catid` 的地址。

@@ -1,8 +1,8 @@
 """Versioned public-page selections. IDs are source IDs, except named JJ sections.
 
 The catalog declares supported queries, not live source availability.
-Fanqie, Qimao and Jinjiang navigation was checked on 2026-11-03.
-Qidian retains conventional category IDs; live parsing is unverified while access is blocked.
+Fanqie, Jinjiang and Qidian mobile navigation was checked on 2026-11-03.
+Only the three retained sources are accepted; removed selections never trigger network access.
 """
 
 from dataclasses import dataclass
@@ -29,13 +29,6 @@ FANQIE_FEMALE = (
     (749, "青春甜宠"), (745, "星光璀璨"), (747, "女频悬疑"), (750, "职场婚恋"),
     (748, "豪门总裁"), (1017, "民国言情"),
 )
-QIMAO_CATEGORIES = (
-    (1, "现代言情"), (2, "古代言情"), (4, "幻想言情"), (56, "历史"),
-    (60, "军事"), (64, "科幻"), (75, "游戏"), (200, "游戏竞技"),
-    (202, "玄幻奇幻"), (203, "都市"), (204, "奇闻异事"), (205, "武侠仙侠"),
-    (206, "体育"), (207, "N次元"), (277, "衍生言情"), (306, "现实题材"),
-    (307, "现实主义"),
-)
 JINJIANG_CATEGORIES = (
     ("ancient-romance", "古代言情"), ("modern-romance", "现代言情"),
     ("time-travel", "古代穿越"), ("modern-danmei", "现代都市纯爱"),
@@ -54,11 +47,11 @@ QIDIAN_CATEGORIES = (
 )
 
 CATALOG = Catalog(sources=(
-    Source(id="qidian", name="起点中文网", home_url="https://www.qidian.com/",
-           note="分类月票榜与畅销榜；验证页面返回 blocked，字体编码的数值不猜测。",
+    Source(id="qidian", name="起点中文网", home_url="https://m.qidian.com/",
+           note="官方移动端分类月票榜与畅销榜；月票保留原单位，畅销数值未公开。",
            categories=categories(QIDIAN_CATEGORIES, "男生", ("yuepiao", "hotsales")),
            boards=(Board(id="yuepiao", name="月票榜", metric_label="月票"),
-                   Board(id="hotsales", name="畅销榜", metric_label="销售指数"))),
+                   Board(id="hotsales", name="畅销榜", metric_label="销售排名（数值未公开）"))),
     Source(id="fanqie", name="番茄小说", home_url="https://fanqienovel.com/",
            note="原站阅读榜/新书榜；通过公开作品详情补全被字体编码的名称。",
            categories=categories(((f"1_{id_}", name) for id_, name in FANQIE_MALE),
@@ -67,14 +60,6 @@ CATALOG = Catalog(sources=(
                                  "女频", ("reading", "new")),
            boards=(Board(id="reading", name="阅读榜", metric_label="在读人数"),
                    Board(id="new", name="新书榜", metric_label="在读人数"))),
-    Source(id="qimao", name="七猫中文网", home_url="https://www.qimao.com/",
-           note="男女大热榜使用热度；分类书库按点击量排序，无公开数值时 metric 为 null。",
-           categories=categories((("boy", "男生"), ("girl", "女生")), "全频大热榜",
-                                 ("hot-daily", "hot-monthly")) +
-                      categories(QIMAO_CATEGORIES, "小说分类", ("category-click",)),
-           boards=(Board(id="hot-daily", name="大热榜·日榜", metric_label="热度"),
-                   Board(id="hot-monthly", name="大热榜·月榜", metric_label="热度"),
-                   Board(id="category-click", name="分类点击量排序", metric_label="点击量（数值未公开）"))),
     Source(id="jinjiang", name="晋江文学城", home_url="https://www.jjwxc.net/",
            note="收入金榜按官方分类分组；只提供顺序，金额未公开，不等同月榜。",
            categories=categories(JINJIANG_CATEGORIES, "收入金榜", ("gold",)),
@@ -99,15 +84,10 @@ class Selection:
             gender, genre = category.split("_")
             kind = "2" if board == "reading" else "1"
             return f"https://fanqienovel.com/rank/{gender}_{kind}_{genre}"
-        if source == "qimao":
-            if board == "category-click":
-                return f"https://www.qimao.com/shuku/a-{category}-a-a-a-a-a-click-1/"
-            period = "date" if board == "hot-daily" else "month"
-            return f"https://www.qimao.com/paihang/{category}/hot/{period}/"
         if source == "jinjiang":
             return "https://www.jjwxc.net/topten.php?orderstr=12"
-        suffix = "" if category == "all" else f"chn{category}/"
-        return f"https://www.qidian.com/rank/{board}/{suffix}"
+        suffix = "" if category == "all" else f"catid{category}/"
+        return f"https://m.qidian.com/rank/{board}/{suffix}"
 
 
 def validate_selection(source: str, category: str, board: str) -> Selection:

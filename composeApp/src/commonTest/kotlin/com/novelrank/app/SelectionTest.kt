@@ -8,10 +8,10 @@ import kotlin.test.*
 class SelectionTest {
     @Test fun usesPreferredSelectionThenValidFallbacks() {
         assertEquals(initialSelection, chooseSelection(testCatalog))
-        assertEquals(Selection("qimao", "203", "category-click"), chooseSelection(testCatalog, Selection("qimao", "203", "reading")))
+        assertEquals(Selection("jinjiang", "modern-romance", "gold"), chooseSelection(testCatalog, Selection("jinjiang", "modern-romance", "reading")))
         assertEquals(initialSelection, chooseSelection(testCatalog, Selection("removed", "removed", "removed")))
         val singleSource = testCatalog.copy(sources = listOf(testCatalog.sources.last()))
-        assertEquals("qimao", chooseSelection(singleSource).sourceId)
+        assertEquals("jinjiang", chooseSelection(singleSource).sourceId)
     }
     @Test fun searchFiltersOnlyCurrentBooksAndKeepsRanks() {
         val state = RankUiState("https://example.com", snapshot = sampleSnapshot(), query = "  ALICE ")

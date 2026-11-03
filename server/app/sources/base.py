@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from ..config import Settings
 from ..models import Book, Failure
 
-HOSTS = frozenset({"fanqienovel.com", "www.qimao.com", "www.jjwxc.net", "www.qidian.com"})
+HOSTS = frozenset({"fanqienovel.com", "www.jjwxc.net", "m.qidian.com"})
 
 
 class SourceError(Exception):

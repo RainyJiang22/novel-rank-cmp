@@ -37,7 +37,7 @@ fun SettingsDialog(
                 Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Text("填写聚合服务地址，四个网站的榜单将通过这个服务获取。", color = Muted)
+                Text("填写聚合服务地址，各网站的榜单将通过这个服务获取。", color = Muted)
                 OutlinedTextField(
                     value = draft,
                     onValueChange = { draft = it; onEdit() },

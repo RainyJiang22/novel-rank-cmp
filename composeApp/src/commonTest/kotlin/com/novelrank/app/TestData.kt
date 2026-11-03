@@ -9,10 +9,10 @@ val testCatalog = Catalog(listOf(
         listOf(Category("1_261", "都市日常", "男频", listOf("reading", "new")),
             Category("0_748", "豪门总裁", "女频", listOf("new"))),
         listOf(Board("reading", "阅读榜", "在读人数"), Board("new", "新书榜", "在读人数"))),
-    Source("qimao", "七猫中文网", "https://www.qimao.com/", "热度与点击量保持区别",
-        listOf(Category("boy", "男生", "大热榜", listOf("hot-daily")),
-            Category("203", "都市", "分类", listOf("category-click"))),
-        listOf(Board("hot-daily", "大热榜·日榜", "热度"), Board("category-click", "分类点击量排序", "点击量"))),
+    Source("jinjiang", "晋江文学城", "https://www.jjwxc.net/", "收入排名，金额未公开",
+        listOf(Category("ancient-romance", "古代言情", "收入金榜", listOf("gold")),
+            Category("modern-romance", "现代言情", "收入金榜", listOf("gold"))),
+        listOf(Board("gold", "分类收入金榜", "收入排名（金额未公开）"))),
 ))
 val initialSelection = Selection("fanqie", "1_261", "reading")
 

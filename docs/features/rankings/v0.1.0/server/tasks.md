@@ -1,6 +1,6 @@
 # 小说热榜 — 服务端任务清单
 
-基于 `design.md`，用户要求实现 server v0.1.0。`quality_gate=off`（沿用本功能选择），普通测试和 API 链路必须执行。仅四站公开排名元数据；不实现客户端、章节、账户、反爬绕过、公网部署，不提交本地配置或抓取原文。
+基于 `design.md`，用户要求实现 server v0.1.0。`quality_gate=off`（沿用本功能选择），普通测试和 API 链路必须执行。任务 1–4 是初版历史；本次按用户指令移除七猫、修复起点并更新已部署的榜单服务，范围见任务 5。不处理章节、账户、验证码，不提交本地配置或抓取原文。
 
 ## 执行顺序
 
@@ -41,3 +41,17 @@
 ## 执行结果
 
 2026-11-03：普通测试 81 passed；本地 HTTP 合成来源链路与真实来源链路均 10/10 PASS；`pip check` 通过。在线验证三站共七种不同组合取得 10 条，起点玄幻月票榜返回 blocked。详见 [验证记录](verification.md)。未运行 Gradle/Xcode；未执行 Harness、覆盖率门禁或双 Agent。
+
+## 任务 5：起点修复、移除七猫 `✅ 已完成`
+
+- ✅ 5.1 修改 `server/app/{catalog,service,main}.py`、`sources/base.py`、`scripts/probe_sources.py`：移除七猫目录/注册/白名单/探测，删除 `sources/qimao.py`；起点改用 `m.qidian.com`，保留 14 类和两个榜单。
+- ✅ 5.2 改写 `sources/qidian.py`：解析公开 SSR JSON，核对网站/频段、路由、页码、分类、当月及原始名次；月票缺失标 partial，畅销数值未公开时 null。
+- ✅ 5.3 修改 `server/tests/{conftest,test_sources,test_http,test_api}.py`：移除七猫解析测试，补起点合成 fixture、错榜/错类/错月份/错页/坏 JSON/缺字段；确认七猫 400 且无网络请求。
+- ✅ 5.4 修改共享 `ui/components/SettingsDialog.kt`、`commonTest/{TestData,SelectionTest,RankPresenterTest,HttpRankRepositoryTest}.kt` 与 `desktopTest/RankScreenTest.kt`，用保留来源验证切换逻辑；不改用户现有 `ServiceAddress.kt` 格式改动。
+- ✅ 5.5 更新 `docs/features/rankings/api/rankings/request/rankings.py`：三站目录，不兼容组合使用保留来源；起点作为首查询时仍验证另一来源。
+- ✅ 5.6 执行后端 pytest、`:composeApp:desktopTest`、有限起点月票/畅销/分类实测；部署独立 release，先验证健康/目录，再只重启 NovelRank；云端 API 链路及原服务 PID/状态核对。
+- ✅ 5.7 更新 README、server/README、稳定 API 契约及当前分析/设计；新增 `server/source-fix.md` 记录本轮结果，历史部署/客户端验证页保留并指向新记录。原始响应和日志仅存 `.verification/source-fix/`。
+
+本轮不自动提交、推送或执行 Android/iOS 原生构建。最终质量验收 SKIPPED（quality_gate=off）。
+
+本轮执行结果：后端 114 passed，客户端 26 passed，云端 API 链路 10/10 PASS；起点全站/玄幻的月票/畅销四组合均 ok、十条。七猫已移除，旧请求 400；番茄本轮第 7 名书名/作者缺失，按 partial 保留原名次。已切换独立 release，其余 28 个运行服务及 Nginx 配置/PID未变。详见[来源修复记录](source-fix.md)。

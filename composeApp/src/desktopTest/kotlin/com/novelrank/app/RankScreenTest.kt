@@ -29,7 +29,7 @@ class RankScreenTest {
             SourceSelector(testCatalog.sources, selected, true) { selected = it }
         } } }
         compose.onNodeWithTag("source-fanqie").assertIsSelected()
-        compose.onNodeWithTag("source-qimao").performClick().assertIsSelected()
+        compose.onNodeWithTag("source-jinjiang").performClick().assertIsSelected()
         compose.onNodeWithTag("source-fanqie").assertIsNotSelected()
     }
 

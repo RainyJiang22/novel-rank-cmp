@@ -67,11 +67,12 @@ async def test_redirects_never_fetch_other_hosts_or_silent_default_boards(target
         await http.close()
 
 
-async def test_unknown_host_rejected_without_network():
+@pytest.mark.parametrize("url", ["https://evil.test/", "https://www.qimao.com/paihang/boy/hot/date/", "https://www.qidian.com/rank/yuepiao/"])
+async def test_unknown_or_removed_host_rejected_without_network(url):
     http = make_http(lambda _: pytest.fail("should not fetch"))
     try:
         with pytest.raises(SourceError):
-            await http.get("https://evil.test/")
+            await http.get(url)
     finally:
         await http.close()
 

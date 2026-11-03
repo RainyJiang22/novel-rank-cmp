@@ -18,7 +18,7 @@ def create_app(service: RankingService | None = None) -> FastAPI:
             await app.state.rankings.close()
 
     app = FastAPI(title="NovelRank API", version="0.1.0", lifespan=lifespan,
-                  description="四站公开分类排名；业务状态区分真实数据、缓存、受限和解析失败。")
+                  description="起点、番茄、晋江的公开分类排名；业务状态区分真实数据、缓存、受限和解析失败。")
 
     @app.get("/health", response_model=Health, tags=["服务"], summary="服务健康检查")
     async def health():

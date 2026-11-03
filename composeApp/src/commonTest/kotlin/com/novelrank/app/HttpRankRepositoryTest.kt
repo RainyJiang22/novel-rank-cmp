@@ -50,7 +50,7 @@ class HttpRankRepositoryTest {
 
     @Test fun rejectsWrongIdentityRankOrderAndFakeEmptySuccess() = runTest {
         val sample = sampleSnapshot()
-        val cases = listOf(sample.copy(sourceId = "qimao"), sample.copy(books = emptyList()), sample.copy(status = "new_unknown_status"),
+        val cases = listOf(sample.copy(sourceId = "jinjiang"), sample.copy(books = emptyList()), sample.copy(status = "new_unknown_status"),
             sample.copy(books = sample.books.reversed()), sample.copy(books = listOf(sample.books[0], sample.books[0])),
             sample.copy(sourceUrl = "javascript:alert(1)"))
         for (value in cases) {

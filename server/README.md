@@ -1,8 +1,8 @@
 # NovelRank Server v0.1.0
 
-Python 3.11+ / FastAPI 聚合服务。提供起点、番茄、七猫、晋江的版本化分类目录和按需前十查询，保留各站排名口径、来源链接、采集时间及失败状态。Android、iOS、桌面共享客户端已接入。
+Python 3.11+ / FastAPI 聚合服务。提供起点、番茄、晋江的版本化分类目录和按需前十查询，保留各站排名口径、来源链接、采集时间及失败状态。Android、iOS、桌面共享客户端已接入。
 
-云端基础地址：`https://47.251.189.239/novelrank`，可打开 [Swagger](https://47.251.189.239/novelrank/docs)。[部署与回滚](deploy/README.md) · [云端验证记录](../docs/features/rankings/v0.1.0/server/deployment.md)。公开目录不保证上游实时可用：本轮云端番茄、晋江成功，起点 202 受限，七猫 405 暂不可用。
+云端基础地址：`https://47.251.189.239/novelrank`，可打开 [Swagger](https://47.251.189.239/novelrank/docs)。[部署与回滚](deploy/README.md) · [最新来源验证](../docs/features/rankings/v0.1.0/server/source-fix.md)。起点改用官方移动榜单；七猫已移除，旧 `source=qimao` 请求返回 400 且不会访问上游。公开目录不保证上游持续可用。
 
 ## 启动
 
@@ -32,9 +32,8 @@ curl 'http://127.0.0.1:8000/api/v1/rankings?source=fanqie&category=1_261&board=r
 
 | 网站 | 首版支持 | 数据含义 |
 | --- | --- | --- |
-| 起点 | 常用 14 类（含全部），月票 / 畅销 | 受限时返回 `blocked`；当前未完成真实榜单解析验证 |
+| 起点 | 常用 14 类（含全部），月票 / 畅销 | 官方移动端当月月票排名/票数；畅销排名公开、数值未公开，返回 `null` |
 | 番茄 | 男频 19 类、女频 18 类，阅读 / 新书 | 原站名次，在读人数；被字体编码的书名通过公开作品页补全 |
-| 七猫 | 男女大热日榜 / 月榜；17 个小说分类按点击量排序 | 大热榜热度与书库点击量保持区别；书库未公开数值返回 `null` |
 | 晋江 | 18 个分类收入金榜 | 官方分类分组的收入排序，金额未公开；不等同月榜 |
 
 目录是支持范围，不能当作实时可用性保证；未列出的分类不接受查询。不会把全站榜按类型筛选后冒充分类榜。
@@ -82,6 +81,6 @@ export NOVELRANK_QUERY_TIMEOUT=45
 
 默认要求首个番茄查询取得真实数据；网络受限时可显式加 `--allow-upstream-failure` 只验证接口契约，并在报告中保留失败业务状态。自定义服务使用 `--base-url`；生成本地运行记录可加 `--docs-dir .verification/server/api-doc`。
 
-[稳定接口契约](../docs/api/rankings.md) · [API 链路文档](../docs/features/rankings/api/rankings/doc/00_link.md) · [本次验证记录](../docs/features/rankings/v0.1.0/server/verification.md)
+[稳定接口契约](../docs/api/rankings.md) · [初版 API 链路记录](../docs/features/rankings/api/rankings/doc/00_link.md) · [最新验证记录](../docs/features/rankings/v0.1.0/server/source-fix.md)
 
 最终质量验收：`SKIPPED（quality_gate=off）`，普通测试和 API 链路独立执行。

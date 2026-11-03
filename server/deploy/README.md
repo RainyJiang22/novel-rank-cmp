@@ -1,6 +1,6 @@
 # NovelRank 独立部署与回滚
 
-当前入口：`https://47.251.189.239/novelrank`，接口文档为 [/novelrank/docs](https://47.251.189.239/novelrank/docs)。实际检查结果见 [云部署记录](../../docs/features/rankings/v0.1.0/server/deployment.md)。
+当前入口：`https://47.251.189.239/novelrank`，接口文档为 [/novelrank/docs](https://47.251.189.239/novelrank/docs)。实际检查结果见[最新来源修复](../../docs/features/rankings/v0.1.0/server/source-fix.md)和[首次云部署记录](../../docs/features/rankings/v0.1.0/server/deployment.md)。
 
 ## 隔离边界
 

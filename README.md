@@ -2,9 +2,9 @@
 
 一个基于 **Kotlin Compose Multiplatform（CMP）** 的小说分类热榜项目，目标是在 **Android、iOS 和桌面端** 查询不同小说网站、不同类型的前十热门作品。
 
-首批来源为 **起点中文网、番茄小说、七猫中文网、晋江文学城**。
+当前来源为 **起点中文网、番茄小说、晋江文学城**。
 
-> 当前阶段：**三端共享客户端与 server v0.1.0 已实现，云端 API 已部署**。客户端支持网站/分类/榜单选择、前十查询、搜索、刷新、原站跳转和服务地址保存。默认连接 `https://47.251.189.239/novelrank`。云端实测番茄、晋江已测组合返回十条；起点访问受限，七猫返回 HTTP 405，界面会显示实际来源状态。
+> 当前阶段：**三端共享客户端与 server v0.1.0 已实现，云端 API 已部署**。客户端支持网站/分类/榜单选择、前十查询、搜索、刷新、原站跳转和服务地址保存。默认连接 `https://47.251.189.239/novelrank`。起点改用官方移动榜单；七猫按用户要求移除，重新加载目录后客户端只显示三个来源。最新实测范围见[来源修复记录](docs/features/rankings/v0.1.0/server/source-fix.md)。
 
 ## 项目目标
 
@@ -47,7 +47,7 @@ novel-rank-cmp/
 │       └── iosMain/               # Darwin、NSUserDefaults 与 UIViewController
 ├── iosApp/                       # SwiftUI 容器与 Xcode 工程
 ├── gradle/                       # 统一依赖版本与 Wrapper
-├── server/                       # FastAPI 服务、四站适配器与普通测试
+├── server/                       # FastAPI 服务、三站适配器与普通测试
 ├── scripts/probe_sources.py       # 有限在线来源探测
 ├── docs/features/rankings/       # 分析、设计、任务与 API 测试链
 ├── docs/api/rankings.md          # 稳定接口契约
@@ -73,7 +73,7 @@ cd novel-rank-cmp
 - 基础地址：`https://47.251.189.239/novelrank`
 - [Swagger 接口文档](https://47.251.189.239/novelrank/docs)
 - [健康检查](https://47.251.189.239/novelrank/health) · [网站分类目录](https://47.251.189.239/novelrank/api/v1/catalog)
-- [部署与回滚说明](server/deploy/README.md) · [云端验证记录](docs/features/rankings/v0.1.0/server/deployment.md)
+- [部署与回滚说明](server/deploy/README.md) · [最新来源验证](docs/features/rankings/v0.1.0/server/source-fix.md) · [首次部署记录](docs/features/rankings/v0.1.0/server/deployment.md)
 
 部署使用独立 systemd 服务、venv 和 `127.0.0.1:18766`，仅 `/novelrank/` 路径公开；原根路径服务的认证与代理保持原样。新服务限制 CPU、内存和并发。
 
@@ -176,16 +176,16 @@ PRODUCT_BUNDLE_IDENTIFIER = com.yourname.novelrank
 
 初始化阶段曾在 Apple Silicon 主机完成 DMG 构建与欢迎页启动验证，该旧安装包不包含本次客户端改动。本轮没有重新打包、发布签名或公证。
 
-本轮 `./gradlew :composeApp:desktopTest --console=plain` 通过 **26 项测试**（20 项共享逻辑/契约、6 项 Compose UI）。`./gradlew :composeApp:run --console=plain` 已运行桌面客户端，并从云端读取、展示晋江前十。Android、iOS 尚未原生编译、安装或启动验证；共享 JVM 测试与 plist 检查不能代替这两端验证。
+移除七猫后，`./gradlew :composeApp:desktopTest --console=plain` 通过 **26 项测试**（20 项共享逻辑/契约、6 项 Compose UI）。客户端实现阶段曾运行桌面客户端，从云端读取、展示晋江前十。Android、iOS 尚未原生编译、安装或启动验证；共享 JVM 测试与 plist 检查不能代替这两端验证。
 
-服务端实现阶段已通过 81 项普通测试；本轮云端 **10/10 API 链路通过**，HTTPS 验证正常。云端番茄、晋江已测组合返回十条，起点为 `blocked`，七猫为 `unavailable`（原站 HTTP 405）；此前本地七猫成功不能当作云端可用性保证。未逐一在线验证所有分类。
+服务端已加入起点官方移动榜单的分类、月份、页码、名次和缺失字段校验，并验证旧七猫请求在网络前返回 400。起点月票榜保留原始票数，畅销榜的数值未公开，返回 `metric=null`。普通测试与云端 API 链路的当前结果见[来源修复记录](docs/features/rankings/v0.1.0/server/source-fix.md)，未逐一在线验证所有分类。
 
-精确记录见 [当前客户端验证](docs/features/rankings/v0.1.0/client/verification.md)、[云部署记录](docs/features/rankings/v0.1.0/server/deployment.md)、[初始化历史](docs/features/rankings/v0.1.0/verification.md) 与 [服务端实现验证](docs/features/rankings/v0.1.0/server/verification.md)。最终质量验收为 `SKIPPED`（`quality_gate=off`）。
+历史记录见 [客户端实现验证](docs/features/rankings/v0.1.0/client/verification.md)、[首次云部署](docs/features/rankings/v0.1.0/server/deployment.md)、[初始化历史](docs/features/rankings/v0.1.0/verification.md) 与 [服务端初版验证](docs/features/rankings/v0.1.0/server/verification.md)。最终质量验收为 `SKIPPED`（`quality_gate=off`）。
 
 ## 后续开发
 
 - [x] 定义网站、分类、榜单及作品元数据契约。
-- [x] 实现四站独立来源适配器与可用性状态（起点当前受限）。
+- [x] 实现起点、番茄、晋江独立来源适配器与可用性状态。
 - [x] 实现带缓存的聚合服务、普通测试及 API 链路测试。
 - [x] 实现三端共享榜单查询、刷新、筛选和来源跳转。
 - [x] 客户端业务/UI 测试与桌面云端联调。

@@ -12,7 +12,6 @@ from server.app.service import RankingService
 
 SELECTIONS = {
     "fanqie": ("1_261", "reading"),
-    "qimao": ("203", "category-click"),
     "jinjiang": ("ancient-romance", "gold"),
     "qidian": ("21", "yuepiao"),
 }

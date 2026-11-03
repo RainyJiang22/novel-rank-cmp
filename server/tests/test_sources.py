@@ -7,11 +7,11 @@ from server.app.sources.base import SourceError, clean
 from server.app.sources.fanqie import Fanqie
 from server.app.sources.jinjiang import Jinjiang
 from server.app.sources.qidian import Qidian
-from server.app.sources.qimao import Qimao
-from conftest import FakeHTTP, fanqie_state, jinjiang_page, qidian_page, qimao_page, ssr
+from conftest import FakeHTTP, fanqie_state, jinjiang_page, qidian_page, qidian_state, ssr
 
 
 def test_catalog_combinations_have_unique_keys_and_fixed_urls():
+    assert {s.id for s in CATALOG.sources} == {"qidian", "fanqie", "jinjiang"}
     keys = set()
     for source in CATALOG.sources:
         for category in source.categories:
@@ -21,7 +21,8 @@ def test_catalog_combinations_have_unique_keys_and_fixed_urls():
                 keys.add(selection.key)
                 assert selection.url.startswith(source.home_url)
     with pytest.raises(ValueError):
-        validate_selection("qimao", "203", "hot-daily")
+        validate_selection("qimao", "203", "category-click")
+    assert len(keys) == 120
 
 
 async def test_fanqie_top_ten_and_correct_metric(selection):
@@ -81,39 +82,6 @@ async def test_fanqie_never_executes_non_json_ssr(selection, html):
         await Fanqie(FakeHTTP(html)).ranking(selection)
 
 
-@pytest.mark.parametrize("category,board,gender,period", [
-    ("boy", "hot-daily", "男生榜", "日榜"), ("girl", "hot-monthly", "女生榜", "月榜"),
-])
-async def test_qimao_heat_rankings(category, board, gender, period):
-    result = await Qimao(FakeHTTP(qimao_page(gender=gender, period=period, count=12))).ranking(
-        validate_selection("qimao", category, board))
-    assert len(result.books) == 10
-    assert result.books[0].metric == "12.3万热度"
-
-
-async def test_qimao_category_uses_click_order_without_fabricating_metric():
-    result = await Qimao(FakeHTTP(qimao_page(library=True))).ranking(validate_selection("qimao", "203", "category-click"))
-    assert len(result.books) == 10 and all(b.metric is None for b in result.books)
-    assert result.books[0].genre == "都市高手"
-    assert not result.partial
-
-
-@pytest.mark.parametrize("old,new", [
-    ("按点击量", "按更新时间"), (">都市<", ">玄幻奇幻<"),
-    ("a-203-220", "a-202-220"), ('num active">1', 'num active">2'),
-    ('href="/shuku/1/"', 'href="https://evil.test/shuku/1/"'),
-])
-async def test_qimao_rejects_wrong_filter_sort_page_or_link(old, new):
-    html = qimao_page(library=True).replace(old, new)
-    with pytest.raises(SourceError):
-        await Qimao(FakeHTTP(html)).ranking(validate_selection("qimao", "203", "category-click"))
-
-
-async def test_qimao_rejects_wrong_period():
-    with pytest.raises(SourceError):
-        await Qimao(FakeHTTP(qimao_page())).ranking(validate_selection("qimao", "boy", "hot-monthly"))
-
-
 async def test_jinjiang_gold_section_and_order():
     http = FakeHTTP(jinjiang_page(count=24))
     result = await Jinjiang(http).ranking(validate_selection("jinjiang", "ancient-romance", "gold"))
@@ -130,19 +98,98 @@ async def test_jinjiang_does_not_substitute_another_board_or_duplicate(old, new)
             validate_selection("jinjiang", "ancient-romance", "gold"))
 
 
-async def test_qidian_parser_and_font_encoded_metric():
-    selection = validate_selection("qidian", "21", "yuepiao")
-    result = await Qidian(FakeHTTP(qidian_page())).ranking(selection)
-    assert len(result.books) == 10 and result.books[0].metric == "123月票"
-    encoded = await Qidian(FakeHTTP(qidian_page().replace("123", "𘡙𘡘𘡓"))).ranking(selection)
-    assert encoded.partial and all(b.metric is None for b in encoded.books)
+@pytest.fixture
+def qidian_month(monkeypatch):
+    monkeypatch.setattr("server.app.sources.qidian.current_month", lambda: "202611")
 
 
-@pytest.mark.parametrize("old,new", [("月票榜", "畅销榜"), ('act">玄幻', 'act">奇幻'),
-                                     ('rank-tag">1', 'rank-tag">2')])
-async def test_qidian_rejects_wrong_selection_or_rank(old, new):
+@pytest.mark.parametrize("board,category", [("yuepiao", "21"), ("yuepiao", "all"), ("hotsales", "21"), ("hotsales", "all")])
+async def test_qidian_public_mobile_rankings(qidian_month, board, category):
+    selection = validate_selection("qidian", category, board)
+    http = FakeHTTP(qidian_page(qidian_state(12, board=board, category=category)))
+    result = await Qidian(http).ranking(selection)
+    assert len(result.books) == 10
+    assert [b.rank for b in result.books] == list(range(1, 11))
+    assert result.books[0].metric == ("1.23万月票" if board == "yuepiao" else None)
+    assert result.books[0].url == "https://m.qidian.com/book/1/"
+    assert not result.partial
+    assert http.calls[0][0] == selection.url
+    assert selection.url.startswith("https://m.qidian.com/rank/")
+
+
+@pytest.mark.parametrize("value", [None, "乱码", "𘡙𘡘𘡓月票", "10推荐票"])
+async def test_qidian_missing_or_unreadable_monthly_votes_are_partial(qidian_month, value):
+    state = qidian_state()
+    state["pageContext"]["pageProps"]["pageData"]["records"][0]["rankCnt"] = value
+    result = await Qidian(FakeHTTP(qidian_page(state))).ranking(validate_selection("qidian", "21", "yuepiao"))
+    assert result.partial and result.books[0].metric is None and len(result.books) == 10
+
+
+@pytest.mark.parametrize("value", ["!undefined", "!NaN", "!Date:2026-11-03T00:00:00.000Z", None, 123])
+async def test_qidian_missing_or_non_text_metadata_is_not_displayed(qidian_month, value):
+    state = qidian_state()
+    row = state["pageContext"]["pageProps"]["pageData"]["records"][0]
+    row.update(bName=value, bAuth=value, cat=value, subCat=value)
+    result = await Qidian(FakeHTTP(qidian_page(state))).ranking(validate_selection("qidian", "21", "yuepiao"))
+    book = result.books[0]
+    assert book.title is None and book.author is None and book.genre is None
+    assert book.metadata_status == "partial" and book.rank == 1
+    assert len(result.books) == 10
+
+
+async def test_qidian_decodes_escaped_literal_text(qidian_month):
+    state = qidian_state()
+    row = state["pageContext"]["pageProps"]["pageData"]["records"][0]
+    row.update(bName="!!测试作品", bAuth="!!undefined")
+    result = await Qidian(FakeHTTP(qidian_page(state))).ranking(validate_selection("qidian", "21", "yuepiao"))
+    assert result.books[0].title == "!测试作品"
+    assert result.books[0].author == "!undefined"
+    assert result.books[0].metadata_status == "complete"
+
+
+@pytest.mark.parametrize("change", ["site", "gender", "board", "path", "route_category", "route_month", "page",
+    "category", "category_name", "month", "month_name", "missing_filter", "duplicate_filter", "filter_index",
+    "record_category", "rank", "rank_bool", "duplicate", "id", "empty", "records_type", "row_type", "error", "props"])
+async def test_qidian_rejects_wrong_selection_or_malformed_page(qidian_month, change):
+    state = qidian_state()
+    context = state["pageContext"]
+    route = context["routeParams"]
+    data = context["pageProps"]["pageData"]
+    row = data["records"][0]
+    if change == "site": context["mDomain"] = "m.qdmm.com"
+    if change == "gender": data["gender"] = "female"
+    if change == "board": route["pageType"] = "hotsales"
+    if change == "path": context["urlPathname"] = "/rank/yuepiao/"
+    if change == "route_category": route["filterParamOne"] = "catid4"
+    if change == "route_month": route["filterParamTwo"] = "202610"
+    if change == "page": data["pageNum"] = 2
+    if change == "category": data["filters"][0]["items"][0]["value"] = 4
+    if change == "category_name": data["filters"][0]["items"][0]["text"] = "都市"
+    if change == "month": data["filters"][1]["items"][0]["value"] = "202610"
+    if change == "month_name": data["filters"][1]["items"][0]["text"] = "10月"
+    if change == "missing_filter": data["filters"] = []
+    if change == "duplicate_filter": data["filters"].append(data["filters"][0])
+    if change == "filter_index": data["filters"][0]["selectedIndex"] = -1
+    if change == "record_category": row["catId"] = 4
+    if change == "rank": row["rankNum"] = 2
+    if change == "rank_bool": row["rankNum"] = True
+    if change == "duplicate": row["bid"] = "2"
+    if change == "id": row["bid"] = "../secret"
+    if change == "empty": data["records"] = []
+    if change == "records_type": data["records"] = {}
+    if change == "row_type": data["records"][0] = None
+    if change == "error": context["errorMsg"] = "upstream failed"
+    if change == "props": context["pageProps"] = None
+    with pytest.raises(SourceError) as caught:
+        await Qidian(FakeHTTP(qidian_page(state))).ranking(validate_selection("qidian", "21", "yuepiao"))
+    assert caught.value.status == "parse_error"
+
+
+@pytest.mark.parametrize("html", ["<html>empty</html>", '<script id="vite-plugin-ssr_pageContext" type="application/json">notJSON()</script>',
+                                      qidian_page([]), qidian_page({"pageContext": None})])
+async def test_qidian_never_executes_scripts_or_accepts_missing_payload(qidian_month, html):
     with pytest.raises(SourceError):
-        await Qidian(FakeHTTP(qidian_page().replace(old, new))).ranking(validate_selection("qidian", "21", "yuepiao"))
+        await Qidian(FakeHTTP(html)).ranking(validate_selection("qidian", "21", "yuepiao"))
 
 
 @pytest.mark.parametrize("value", ["\ue123", "\U000f0001", "乱码\ufffd", None, "  "])

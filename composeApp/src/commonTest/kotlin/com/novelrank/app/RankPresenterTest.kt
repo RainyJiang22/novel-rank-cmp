@@ -24,9 +24,9 @@ class RankPresenterTest {
             assertEquals("", presenter.state.value.query)
             presenter.selectBoard("reading")
             assertEquals("new", presenter.state.value.selection?.boardId)
-            presenter.selectSource("qimao"); advanceUntilIdle()
-            presenter.selectCategory("203"); advanceUntilIdle()
-            assertEquals("category-click", presenter.state.value.selection?.boardId)
+            presenter.selectSource("jinjiang"); advanceUntilIdle()
+            presenter.selectCategory("modern-romance"); advanceUntilIdle()
+            assertEquals("gold", presenter.state.value.selection?.boardId)
             presenter.refresh(); advanceUntilIdle()
             assertTrue(repository.rankingCalls.last().third)
         } finally { presenter.close() }
@@ -45,10 +45,10 @@ class RankPresenterTest {
         try {
             presenter.start(); runCurrent()
             assertTrue(presenter.state.value.rankingLoading)
-            presenter.selectSource("qimao"); runCurrent()
-            assertEquals("qimao", presenter.state.value.snapshot?.sourceId)
+            presenter.selectSource("jinjiang"); runCurrent()
+            assertEquals("jinjiang", presenter.state.value.snapshot?.sourceId)
             pending.complete(Unit); advanceUntilIdle()
-            assertEquals("qimao", presenter.state.value.snapshot?.sourceId)
+            assertEquals("jinjiang", presenter.state.value.snapshot?.sourceId)
         } finally { pending.complete(Unit); presenter.close() }
     }
 

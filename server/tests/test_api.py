@@ -15,7 +15,7 @@ def test_health_catalog_query_cache_refresh_and_lifecycle(result):
     with TestClient(create_app(service)) as client:
         assert client.get("/health").json() == {"status": "ok"}
         catalog = client.get("/api/v1/catalog").json()
-        assert len(catalog["sources"]) == 4
+        assert {source["id"] for source in catalog["sources"]} == {"qidian", "fanqie", "jinjiang"}
         assert "boardIds" in catalog["sources"][0]["categories"][0]
         first = client.get("/api/v1/rankings", params=PARAMS)
         data = first.json()
@@ -33,7 +33,9 @@ def test_health_catalog_query_cache_refresh_and_lifecycle(result):
 
 @pytest.mark.parametrize("params,status", [
     ({}, 422), (PARAMS | {"source": "unknown"}, 400), (PARAMS | {"category": "missing"}, 400),
-    ({"source": "qimao", "category": "203", "board": "hot-daily"}, 400),
+    ({"source": "fanqie", "category": "1_261", "board": "gold"}, 400),
+    ({"source": "qimao", "category": "203", "board": "category-click"}, 400),
+    ({"source": "qimao", "category": "boy", "board": "hot-daily"}, 400),
     (PARAMS | {"refresh": "not-a-bool"}, 422), (PARAMS | {"category": "../../etc/passwd"}, 400),
 ])
 def test_api_rejects_bad_selection_before_network(result, params, status):

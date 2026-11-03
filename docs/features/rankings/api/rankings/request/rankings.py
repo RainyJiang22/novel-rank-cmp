@@ -110,7 +110,7 @@ class Chain:
         self.step("health", "/health", "检查服务是否运行。", check=health)
 
         def catalog(data):
-            assert {s["id"] for s in data["sources"]} == {"fanqie", "qimao", "qidian", "jinjiang"}
+            assert {s["id"] for s in data["sources"]} == {"fanqie", "qidian", "jinjiang"}
             assert all(s["categories"] and s["boards"] for s in data["sources"])
         directory = self.step("catalog", "/api/v1/catalog", "获取版本化网站、分类和榜单目录。", check=catalog)
         params = {"source": self.args.source, "category": self.args.category, "board": self.args.board}
@@ -140,11 +140,12 @@ class Chain:
         self.step("refresh", "/api/v1/rankings", "立即刷新仍遵守 60 秒最短重试间隔。", params=params | {"refresh": "true"}, check=cache)
         self.step("invalid_source", "/api/v1/rankings", "未知网站返回 400。", params=params | {"source": "unknown"}, expected=400)
         self.step("invalid_combination", "/api/v1/rankings", "分类与榜单不兼容时返回 400。",
-                  params={"source": "qimao", "category": "203", "board": "hot-daily"}, expected=400)
+                  params={"source": "fanqie", "category": "1_261", "board": "gold"}, expected=400)
         self.step("missing", "/api/v1/rankings", "缺少必填参数返回 422。", expected=422)
         self.step("invalid_refresh", "/api/v1/rankings", "刷新参数类型错误返回 422。", params=params | {"refresh": "invalid"}, expected=422)
-        other = {"source": "qidian", "category": "21", "board": "yuepiao"}
-        self.step("other_source", "/api/v1/rankings", "跨站查询保持独立状态；起点验证页可返回 blocked。",
+        other = ({"source": "fanqie", "category": "1_261", "board": "reading"} if self.args.source == "qidian"
+                 else {"source": "qidian", "category": "21", "board": "yuepiao"})
+        self.step("other_source", "/api/v1/rankings", "跨站查询保持独立状态；来源受限时明确返回 blocked。",
                   params=other, check=lambda data: snapshot(data, other))
         print(f"API 链路完成：{len(self.entries)}/10 PASS，文档：{self.docs}")
 
