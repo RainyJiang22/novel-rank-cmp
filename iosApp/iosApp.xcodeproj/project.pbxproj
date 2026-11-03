@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B27C68C425A146B19B0A8F01 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B27C68C425A146B19B0A8F02 /* Assets.xcassets */; };
 		0F1AC78770A5497A2602A614 /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59BC234AFE0A5C6D1191D5E /* iOSApp.swift */; };
 		C3263D947F6AAAFDA30AC03E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 127F94A137A26BAB2DF8D06D /* Foundation.framework */; };
 		D1B8B68FA306D328A3329500 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831AFDEFF817D953CE189F05 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B27C68C425A146B19B0A8F02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AACC44001122334455667788 /* Info-Debug.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Debug.plist"; sourceTree = "<group>"; };
 		127F94A137A26BAB2DF8D06D /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		67D5769122405A7A051F56F9 /* Config.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
@@ -56,6 +58,7 @@
 		2DB608C7816D1D4C104D013B /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
+				B27C68C425A146B19B0A8F02 /* Assets.xcassets */,
 				A59BC234AFE0A5C6D1191D5E /* iOSApp.swift */,
 				831AFDEFF817D953CE189F05 /* ContentView.swift */,
 				AC32B7917B8CDD88E7DCC836 /* Info.plist */,
@@ -145,6 +148,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B27C68C425A146B19B0A8F01 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -78,3 +78,13 @@
 - 原 28 个服务 PID/状态及 Nginx master 未变化，原 HTTPS 配置只有一行新增 include；新服务资源限制和回环监听已核对，日志轮转 dry-run 通过。
 - 详情见 [客户端验证](verification.md)、[部署记录](../server/deployment.md)；本地证据、缓存及个人配置继续忽略。按用户后续“提交下”的指令创建本地提交，未推送或切换分支。
 - 最终质量验收 **SKIPPED（沿用 quality_gate=off）**；没有运行 Harness、门禁覆盖率或双 Agent。
+
+## 追加任务 6：统一应用图标 `✅ 已完成`
+
+用户要求替换 icon，范围为 Android、iOS、桌面端应用图标。
+
+- ✅ 6.1 新增 `assets/branding/app-icon.svg`、PNG 预览和 `scripts/export-icons.swift`；使用原有墨绿/米白配色，加入上升榜单元素，生成平台资源。
+- ✅ 6.2 Android 使用自适应前景/背景与 API 33+ 单色图标，更新 Manifest 引用，删除旧图标。
+- ✅ 6.3 iOS 补齐 AppIcon 18 个槽位、13 张无透明通道 PNG，加入 Xcode Resources 和共享配置。
+- ✅ 6.4 Desktop 设置窗口/受支持 Dock 图标，并接入 ICNS、ICO、PNG 安装包图标。
+- ✅ 6.5 执行资源导出、尺寸/格式与引用检查、plist/project lint 和图标预览检查；更新 README 与[资源说明](../../../../../assets/branding/README.md)。本轮不编译、打包或安装应用，不修改服务端，不自动提交/推送。最终质量验收 SKIPPED。

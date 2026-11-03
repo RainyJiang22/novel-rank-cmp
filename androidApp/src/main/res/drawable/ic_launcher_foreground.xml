@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generated from assets/branding/app-icon.svg by scripts/export-icons.swift. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <group android:pivotX="54" android:pivotY="54" android:scaleX="0.82" android:scaleY="0.82" android:translateY="4.92">
+        <path android:fillColor="#F6F4ED" android:pathData="M23 35 C33 33 43 36 51 42 L51 78 C43 72 33 69 23 71 C21 71 20 70 20 68 L20 39 C20 37 21 36 23 35 Z" />
+        <path android:fillColor="#F6F4ED" android:pathData="M57 42 C65 36 75 33 85 35 C87 36 88 37 88 39 L88 68 C88 70 87 71 85 71 C75 69 65 72 57 78 Z" />
+        <path android:fillColor="#174D40" android:pathData="M28 43 C33 43 39 44 44 47 L44 51 C39 48 33 47 28 47 Z" />
+        <path android:fillColor="#174D40" android:pathData="M28 53 C33 53 39 54 44 57 L44 61 C39 58 33 57 28 57 Z" />
+        <path android:fillColor="#C58B46" android:pathData="M63 56 C63 55 64 54 65 54 L66 54 C67 54 68 55 68 56 L68 65 L63 66 Z" />
+        <path android:fillColor="#C58B46" android:pathData="M71 49 C71 48 72 47 73 47 L74 47 C75 47 76 48 76 49 L76 64 L71 64 Z" />
+        <path android:fillColor="#C58B46" android:pathData="M79 42 C79 41 80 40 81 40 L82 40 C83 40 84 41 84 42 L84 64 L79 64 Z" />
+        <path android:fillColor="#C58B46" android:pathData="M48 24 L54 18 L60 24 L56 24 L56 33 L52 33 L52 24 Z" />
+    </group>
+</vector>

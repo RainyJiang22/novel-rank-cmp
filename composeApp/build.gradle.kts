@@ -81,8 +81,15 @@ compose.desktop {
             vendor = "NovelRank"
             macOS {
                 bundleID = "com.novelrank.desktop"
+                iconFile.set(rootProject.file("assets/branding/app-icon.icns"))
                 // macOS installer versions require a positive major version.
                 packageVersion = "1.0.0"
+            }
+            windows {
+                iconFile.set(rootProject.file("assets/branding/app-icon.ico"))
+            }
+            linux {
+                iconFile.set(project.file("src/desktopMain/resources/icons/app-icon.png"))
             }
         }
     }

@@ -170,6 +170,10 @@ PRODUCT_BUNDLE_IDENTIFIER = com.yourname.novelrank
 
 该本地文件、IDE 用户设置、签名资料、账号凭据、`.env` 和构建缓存均已加入 `.gitignore`。仓库保留用于协作的 Gradle 版本、Wrapper、Xcode 工程和共享 Scheme。
 
+## 应用图标
+
+Android、iOS、桌面端使用统一的书页与上升榜单图标。Android 支持自适应与单色主题图标，iOS 已配置 AppIcon，桌面端已配置窗口和各系统安装包图标。[预览、源文件与重新导出说明](assets/branding/README.md)。图标资源已校验，本轮未重新构建安装包。
+
 ## 验证状态
 
 已验证工程文件、版本目录、XML/plist、Xcode 工程结构和 Gradle Wrapper 校验和，并通过 `./gradlew help --offline --console=plain` 的项目配置检查。
