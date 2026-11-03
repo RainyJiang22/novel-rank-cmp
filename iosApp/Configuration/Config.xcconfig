@@ -1,0 +1,4 @@
+// Shared defaults. Personal signing settings belong in the ignored local file.
+PRODUCT_BUNDLE_IDENTIFIER = com.novelrank.ios
+
+#include? "Config.local.xcconfig"
