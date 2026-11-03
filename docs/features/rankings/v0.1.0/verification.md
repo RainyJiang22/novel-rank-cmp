@@ -42,4 +42,12 @@ iOS 的后续验证入口为 `iosApp/iosApp.xcodeproj` 的共享 `iosApp` Scheme
 
 ## GitHub 交付
 
-目标：[RainyJiang22/novel-rank-cmp](https://github.com/RainyJiang22/novel-rank-cmp)。本地已初始化 `main` 分支，远程上传与 description 设置完成后更新交付记录。
+已上传至 [RainyJiang22/novel-rank-cmp](https://github.com/RainyJiang22/novel-rank-cmp)，默认分支 `main`，沿用已有公开可见性。
+
+- 初始化提交 `8dc85fffd67c`，通过 `git ls-remote origin refs/heads/main` 核对远程一致。
+- GitHub tree API 读回的 34 个文件与本地清单一致，README blob SHA 与 `git hash-object README.md` 一致。
+- 使用 `gh repo edit --description` 设置后，`gh repo view --json description,defaultBranchRef,visibility,url` 读回确认。
+- Description：基于 Kotlin Compose Multiplatform 的小说分类热榜项目，面向 Android、iOS 与桌面端，计划接入起点、番茄、七猫和晋江。
+- 未提交 SDK 路径、个人 IDE 配置、签名资料、认证凭据和构建缓存。GitHub 认证由本机凭据管理器处理。
+
+本文件后续状态同步属于文档提交；工程初始化验证对应上述源码提交。完整实时热榜实现仍在后续任务中。
