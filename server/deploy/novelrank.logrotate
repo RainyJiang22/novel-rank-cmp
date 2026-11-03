@@ -1,0 +1,10 @@
+/var/log/novelrank/nginx-*.log {
+    daily
+    maxsize 5M
+    rotate 7
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+}

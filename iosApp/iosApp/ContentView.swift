@@ -4,7 +4,11 @@ import UIKit
 
 struct ComposeView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController()
+        #if DEBUG
+        MainViewControllerKt.MainViewController(allowHttp: true)
+        #else
+        MainViewControllerKt.MainViewController(allowHttp: false)
+        #endif
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}

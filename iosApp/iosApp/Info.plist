@@ -37,5 +37,7 @@
     </array>
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>连接你设置的局域网小说榜单服务，获取网站分类与排名。</string>
 </dict>
 </plist>

@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -31,14 +32,32 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.ui)
             implementation(libs.compose.material3)
+            implementation(libs.ktor.client.core)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
         }
+        androidMain.dependencies { implementation(libs.ktor.client.okhttp) }
+        iosMain.dependencies { implementation(libs.ktor.client.darwin) }
         val desktopMain by getting {
-            dependencies { implementation(compose.desktop.currentOs) }
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(libs.ktor.client.cio)
+            }
+        }
+        val desktopTest by getting {
+            dependencies { implementation(compose.desktop.uiTestJUnit4) }
         }
     }
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperty("java.awt.headless", "true")
 }
 
 android {

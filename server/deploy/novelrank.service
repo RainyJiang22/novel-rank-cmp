@@ -1,0 +1,30 @@
+[Unit]
+Description=NovelRank ranking API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=novelrank
+Group=novelrank
+WorkingDirectory=/opt/novelrank/current
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-/etc/novelrank/environment
+ExecStart=/opt/novelrank/venv/bin/python -m uvicorn server.app.main:app --host 127.0.0.1 --port 18766 --workers 1 --root-path /novelrank --proxy-headers --forwarded-allow-ips 127.0.0.1 --limit-concurrency 32 --no-access-log
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+MemoryMax=256M
+CPUQuota=50%
+TasksMax=64
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+LogsDirectory=novelrank
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target
