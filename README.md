@@ -2,9 +2,9 @@
 
 一个基于 **Kotlin Compose Multiplatform（CMP）** 的小说分类热榜项目，目标是在 **Android、iOS 和桌面端** 查询不同小说网站、不同类型的前十热门作品。
 
-首批计划覆盖 **起点中文网、番茄小说、七猫中文网、晋江文学城**。
+首批来源为 **起点中文网、番茄小说、七猫中文网、晋江文学城**。
 
-> 当前阶段：工程初始化。已提供三端入口、共享欢迎页面、Gradle Wrapper 和功能规划文档；真实榜单与聚合服务尚未实现。页面中的网站均标记为“待接入”，没有模拟排名。
+> 当前阶段：**server v0.1.0 已实现**，包含分类目录、前十查询、缓存和来源状态 API。番茄、七猫、晋江的已测组合取得真实数据；起点当前访问受限，返回 `blocked`。三端客户端仍是欢迎页面，尚未接入服务端。
 
 ## 项目目标
 
@@ -26,6 +26,7 @@
 | Android | minSdk 26，compileSdk / targetSdk 36 |
 | iOS | 最低 iOS 15，支持 arm64 真机、Apple Silicon / Intel 模拟器 |
 | Desktop | JVM，桌面入口；安装包需在对应操作系统上构建 |
+| Server | Python 3.11+、FastAPI 0.162.0、HTTPX 0.28.1、BeautifulSoup 4.15.0 |
 
 采用固定的已发布版本，不使用动态版本。版本选择参考 [Kotlin Multiplatform 兼容表](https://kotlinlang.org/docs/multiplatform/multiplatform-compatibility-guide.html) 和 [Compose Multiplatform 1.9.3 发布说明](https://github.com/JetBrains/compose-multiplatform/releases/tag/v1.9.3)。
 
@@ -41,12 +42,15 @@ novel-rank-cmp/
 │       └── iosMain/               # Compose UIViewController 入口
 ├── iosApp/                       # SwiftUI 容器与 Xcode 工程
 ├── gradle/                       # 统一依赖版本与 Wrapper
-├── docs/features/rankings/       # 需求、客户端/服务端设计和后续任务
+├── server/                       # FastAPI 服务、四站适配器与普通测试
+├── scripts/probe_sources.py       # 有限在线来源探测
+├── docs/features/rankings/       # 分析、设计、任务与 API 测试链
+├── docs/api/rankings.md          # 稳定接口契约
 ├── gradlew
 └── settings.gradle.kts
 ```
 
-`androidApp` 依赖 `composeApp`；iOS 嵌入共享 `ComposeApp.framework`；桌面入口运行共享 UI。聚合服务是后续规划，当前没有 `server/` 运行模块。
+`androidApp` 依赖 `composeApp`；iOS 嵌入共享 `ComposeApp.framework`；桌面入口运行共享 UI。独立 `server/` 提供聚合 API，客户端接入属于下一阶段。
 
 ## 开始使用
 
@@ -56,6 +60,20 @@ cd novel-rank-cmp
 ```
 
 准备 JDK 17，并使用支持 Kotlin Multiplatform 的 Android Studio / IntelliJ IDEA。首次 Gradle 同步会下载依赖；SDK、Xcode 签名信息均不入库。
+
+### 聚合服务
+
+在仓库根目录或 Android Studio 的 Terminal 中运行：
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r server/requirements-dev.txt
+.venv/bin/python -m uvicorn server.app.main:app --host 127.0.0.1 --port 8000
+```
+
+打开 [Swagger 接口文档](http://127.0.0.1:8000/docs)。服务端不需要执行 Gradle 构建。
+
+[服务端运行说明](server/README.md) · [API 契约](docs/api/rankings.md) · [实际 API 测试链记录](docs/features/rankings/api/rankings/doc/00_link.md)
 
 ### Android
 
@@ -128,17 +146,19 @@ PRODUCT_BUNDLE_IDENTIFIER = com.yourname.novelrank
 
 已按后续指令在 Apple Silicon 主机执行 `./gradlew :composeApp:packageDmg --console=plain`，58 秒构建成功，生成约 67.3 MB 的 arm64 DMG；镜像校验通过，打包目录内的应用已启动并显示欢迎页面。当前为 ad-hoc 签名，未做 Developer ID 发布签名或公证。
 
-Android、iOS 尚未编译或启动验证；macOS 的这次验证不代表其他两端构建通过。热榜数据尚未接入。
+Android、iOS 尚未编译或启动验证；macOS 的这次验证不代表其他两端构建通过。客户端热榜数据尚未接入。
 
-精确检查记录见 [初始化验证记录](docs/features/rankings/v0.1.0/verification.md)。初始化阶段尚无业务接口；最终质量验收为 `SKIPPED`（`quality_gate=off`）。
+服务端已通过 81 项普通测试、10 步真实 HTTP API 链路和有限在线来源探测。三站已测组合返回十条数据，起点明确返回受限状态；这些结果不代表所有分类都已逐一在线验证。
+
+精确记录见 [客户端初始化验证](docs/features/rankings/v0.1.0/verification.md) 与 [server v0.1.0 验证记录](docs/features/rankings/v0.1.0/server/verification.md)。最终质量验收为 `SKIPPED`（`quality_gate=off`）。
 
 ## 后续开发
 
-- [ ] 定义网站、分类、榜单及作品元数据契约。
-- [ ] 实现四站独立来源适配器与可用性状态。
-- [ ] 实现带缓存的聚合服务及 API 链路测试。
+- [x] 定义网站、分类、榜单及作品元数据契约。
+- [x] 实现四站独立来源适配器与可用性状态（起点当前受限）。
+- [x] 实现带缓存的聚合服务、普通测试及 API 链路测试。
 - [ ] 实现三端共享榜单查询、刷新、筛选和来源跳转。
-- [ ] 补充业务单元测试、接口契约测试和三端运行验证。
+- [ ] 补充客户端业务测试和三端运行验证。
 
 规划资料：
 
@@ -148,4 +168,4 @@ Android、iOS 尚未编译或启动验证；macOS 的这次验证不代表其他
 
 ## 数据来源原则
 
-以各网站公开页面和实际可用接口为准，保存原始榜单口径与来源。只规划必要的公开作品元数据；访问受限、页面变化或数据不足时明确展示状态。网站列表代表接入计划，**不代表四站已接通**。
+以各网站公开页面和实际可用接口为准，保存原始榜单口径与来源。只获取必要的公开作品元数据；访问受限、页面变化或数据不足时明确展示状态。网站目录代表支持的查询范围，**不代表所有来源和分类当前都可用**。

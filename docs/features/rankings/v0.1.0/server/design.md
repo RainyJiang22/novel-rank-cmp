@@ -7,7 +7,7 @@ tags: [novel, ranking, python, api]
 
 # 小说热榜 — 服务端设计报告
 
-> 规划文档，尚未实现。用户最新指令为先初始化 CMP 工程；本轮没有服务端代码与 API。
+> 本轮实施依据：用户明确要求实现 server v0.1.0；客户端保持当前骨架。
 
 ## 1. 目标
 
@@ -19,7 +19,7 @@ tags: [novel, ranking, python, api]
 
 ## 3. 数据模型与接口
 
-`Source(id,name,homeUrl,note,categories,boards)`；`Category(id,name,group,boardIds)`；`Board(id,name,metricLabel)`；`Book(rank,id,title,author,url,metric,genre)`；`RankingSnapshot(sourceId,categoryId,boardId,status,message,sourceUrl,fetchedAt,sourceUpdatedAt,fromCache,books)`。
+`Source(id,name,homeUrl,note,categories,boards)`；`Category(id,name,group,boardIds)`；`Board(id,name,metricLabel)`；`Book(rank,id,title,author,url,metric,genre,metadataStatus)`；`RankingSnapshot(sourceId,categoryId,boardId,status,message,sourceUrl,fetchedAt,sourceUpdatedAt,fromCache,books,failureReason)`。
 
 | API | 输入 | 输出 |
 | --- | --- | --- |
@@ -29,7 +29,9 @@ tags: [novel, ranking, python, api]
 
 非法来源/分类/组合：HTTP 400，`{"detail":{"code":"INVALID_SELECTION","message":"..."}}`；参数缺失 HTTP 422。来源失败仍返回 HTTP 200 业务状态，状态为 `blocked/unavailable/parse_error`；只有真数据使用 `ok/partial`；旧快照使用 `stale`。空解析不使用 `ok`。未知服务异常保留 HTTP 500，由客户端显示服务错误。
 
-内存缓存使用完整查询键，TTL 15 分钟，旧快照最多保留 24 小时；同查询并发合并。失败缓存 60 秒，手动刷新也遵守最短重试间隔，避免每次点击直接请求来源。总并发和每站请求间隔有上限。使用 UTC ISO 8601 时间；来源更新时间未知时为空，不能冒用采集时间。
+`title/author/metric/genre/sourceUpdatedAt` 允许为空；字段未取得时不填造数据，`metadataStatus=partial` 标记缺失标题/作者。`failureReason` 在失败或旧快照时记录具体上游状态；失败时 `fetchedAt` 表示尝试结束时间，旧快照保留原采集时间。
+
+内存缓存使用完整查询键，TTL 15 分钟，旧快照最多保留 24 小时；同查询并发合并。失败缓存 60 秒，手动刷新也遵守最短重试间隔，避免每次点击直接请求来源。总并发和每站请求间隔有上限。网络只访问固定官方域名，重定向逐跳校验；响应体与整次查询时间有上限。服务关闭取消进行中任务并关闭连接池。缓存为单进程内存，开发启动使用一个 worker。使用 UTC ISO 8601 时间；来源更新时间未知时为空，不能冒用采集时间。
 
 ## 4. 核心流程
 
@@ -46,7 +48,7 @@ flowchart TD
  H -->|无| J[失败状态和原站入口]
 ```
 
-番茄从榜单 SSR 获取分类与名次，必要时从公开作品详情 SSR 补全书名，详情失败只降级对应条目。七猫保留男女频大热榜，并将类型页明确命名为「分类热度排序」。晋江从分类收入金榜分组取前十，不将全站月榜按类型过滤。起点使用分类月票/畅销榜 URL，访问受限则停止并报告。
+番茄从榜单 SSR 获取分类与名次，必要时从公开作品详情 SSR 补全书名，详情失败只降级对应条目。七猫保留男女频大热榜，并将类型页明确命名为「分类点击量排序」。晋江从分类收入金榜分组取前十，不将全站月榜按类型过滤。起点使用分类月票/畅销榜 URL，访问受限则停止并报告。
 
 ## 5. 项目结构与技术决策
 
@@ -55,6 +57,7 @@ server/app/
   main.py           # 路由与生命周期
   models.py         # 对外契约
   catalog.py        # 支持的真实来源组合
+  config.py         # 可选环境变量与边界校验
   service.py        # 缓存与状态流
   sources/          # 按站点独立适配器及公共 HTTP 边界
 server/tests/       # 构造页面与故障注入，不依赖在线榜单
@@ -68,7 +71,7 @@ scripts/            # 启动、真实来源探测、API 链路
 | 请求边界 | 固定可信域名与目录参数 | 不接收任意抓取 URL |
 | 榜单真实性 | 来源语义与状态外显 | 避免混合单位和假成功 |
 
-新增依赖：FastAPI、uvicorn、httpx、beautifulsoup4、pytest。测试包含超时、受限、错分类、乱码、缓存隔离、并发与过期场景。
+依赖：FastAPI、uvicorn、httpx、beautifulsoup4；测试使用 pytest、pytest-asyncio。路由依赖 service，service 依赖只负责抓取/解析的 sources；sources 不依赖 HTTP 路由。无持久存储，因此无 SQL 表或迁移。测试包含超时、受限、错分类、乱码、缓存隔离、并发与过期场景。
 
 ## 6. 暂不实现
 
