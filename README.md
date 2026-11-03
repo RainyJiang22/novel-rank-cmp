@@ -85,6 +85,23 @@ macOS / Windows / Linux 安装包分别在对应主机上构建。
 
 macOS 安装包版本单独设为 `1.0.0`，满足 [DMG 的主版本号必须大于 0 的校验规则](https://github.com/JetBrains/compose-multiplatform/blob/v1.9.3/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/desktop/application/internal/validation/validatePackageVersions.kt)；应用开发版本及其他桌面包仍使用 `0.1.0`。
 
+在 **macOS 上的 Android Studio** 中构建 DMG：
+
+1. 打开仓库根目录并完成 Gradle Sync，Gradle JDK 选择 17。
+2. 进入 **Run → Edit Configurations… → + → Gradle**。
+3. 名称填写 `Build macOS DMG`，Gradle project 选择仓库根目录，Tasks / Run 字段填写 `:composeApp:packageDmg`。
+4. 点击 **Apply → Run**，以后可从顶部运行配置列表直接选择该配置打包。
+
+也可以在 IDE 底部 **Terminal** 中执行：
+
+```bash
+./gradlew :composeApp:packageDmg
+```
+
+DMG 输出：`composeApp/build/compose/binaries/main/dmg/NovelRank-1.0.0.dmg`。
+
+仅运行桌面程序时使用 `:composeApp:run`。任务说明见 [Compose 官方打包文档](https://kotlinlang.org/docs/multiplatform/compose-native-distribution.html)，运行配置字段见 [Gradle Run Configuration 文档](https://www.jetbrains.com/help/idea/run-debug-gradle.html)。
+
 ### iOS
 
 1. 在 macOS 上安装 Xcode 并完成首次启动配置，确保可使用 JDK 17。
@@ -107,7 +124,11 @@ PRODUCT_BUNDLE_IDENTIFIER = com.yourname.novelrank
 
 ## 验证状态
 
-已验证工程文件、版本目录、XML/plist、Xcode 工程结构和 Gradle Wrapper 校验和，并通过 `./gradlew help --offline --console=plain` 的项目配置检查。**尚未执行应用编译、三端启动或设备验证**，不能将配置检查视为应用构建通过。
+已验证工程文件、版本目录、XML/plist、Xcode 工程结构和 Gradle Wrapper 校验和，并通过 `./gradlew help --offline --console=plain` 的项目配置检查。
+
+已按后续指令在 Apple Silicon 主机执行 `./gradlew :composeApp:packageDmg --console=plain`，58 秒构建成功，生成约 67.3 MB 的 arm64 DMG；镜像校验通过，打包目录内的应用已启动并显示欢迎页面。当前为 ad-hoc 签名，未做 Developer ID 发布签名或公证。
+
+Android、iOS 尚未编译或启动验证；macOS 的这次验证不代表其他两端构建通过。热榜数据尚未接入。
 
 精确检查记录见 [初始化验证记录](docs/features/rankings/v0.1.0/verification.md)。初始化阶段尚无业务接口；最终质量验收为 `SKIPPED`（`quality_gate=off`）。
 

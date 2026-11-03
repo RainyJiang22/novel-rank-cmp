@@ -24,7 +24,7 @@ Gradle 8.14.3 bin ZIP SHA-256：`bd71102213493060956ec229d946beee57158dbd89d0e62
 
 校验来源：[Wrapper 官方校验和](https://services.gradle.org/distributions/gradle-8.14.3-wrapper.jar.sha256)、[分发包官方校验和](https://services.gradle.org/distributions/gradle-8.14.3-bin.zip.sha256)。
 
-## 验证边界
+## 初始化交付时的验证边界
 
 按本轮工程初始化范围，不执行 Gradle/Xcode 编译、打包、设备启动和视觉验证。本记录仅证明文件格式、工程引用与交付边界，不证明三端编译运行通过。未运行以下命令：
 
@@ -66,3 +66,30 @@ git diff --check
 ```
 
 结果：`BUILD SUCCESSFUL in 4s`，仅执行 `:help` 一个任务；补丁格式检查通过。Gradle 已成功配置项目，并通过 DMG 版本与构建版本校验。未执行应用编译、DMG 打包、设备启动或原生测试，最终质量门禁仍为 `SKIPPED`。
+
+## 后续执行：macOS DMG 构建
+
+用户明确要求构建 macOS 后，基于源码提交 `b8483a4e5227`，在 Apple Silicon / JDK 17 上执行：
+
+```bash
+./gradlew :composeApp:packageDmg --console=plain
+hdiutil verify composeApp/build/compose/binaries/main/dmg/NovelRank-1.0.0.dmg
+```
+
+构建结果：`BUILD SUCCESSFUL in 58s`，10 个任务执行，包含 `compileKotlinDesktop`、`createDistributable` 与 `packageDmg`。DMG 校验结果为 `VALID`。
+
+| 项目 | 结果 |
+| --- | --- |
+| 安装包 | `composeApp/build/compose/binaries/main/dmg/NovelRank-1.0.0.dmg` |
+| 应用目录 | `composeApp/build/compose/binaries/main/app/NovelRank.app` |
+| 安装包大小 | 67,326,531 bytes（约 67.3 MB） |
+| SHA-256 | `1ff123d614b54b6f80579aff580288fa46f0ef2f29032b5841f74697e3f7cdfd` |
+| 启动器架构 | Mach-O 64-bit arm64 |
+| Bundle ID | `com.novelrank.desktop` |
+| Bundle version / build version | 1.0.0 / 1.0.0 |
+| 签名 | ad-hoc；未做 Developer ID 发布签名或公证 |
+| 打包入口 | 产物 JAR 中存在 `com/novelrank/app/MainKt.class` |
+| 启动检查 | 已启动打包目录内的应用，窗口标题“小说热榜 · NovelRank”；欢迎页显示四站“待接入” |
+| 本地日志 | `.verification/macos/packageDmg.log`（已忽略） |
+
+本次证明 macOS arm64 编译、打包、镜像完整性及欢迎页启动。不代表 Android/iOS 构建通过，也没有执行真实热榜业务、跨系统安装或完整 UI 测试。构建产物和日志均未纳入 Git；最终质量门禁保持 `SKIPPED`。
